@@ -27,6 +27,17 @@ bool TestAPI(int* mouseAccArray, LASTINPUTINFO* lastInput, CURSORINFO* cursorInf
     return success;
 }
 
+void EnableEfficiencyMode(void) {
+    THREAD_POWER_THROTTLING_STATE power = {};
+
+    power.Version     = THREAD_POWER_THROTTLING_CURRENT_VERSION;
+    power.ControlMask = THREAD_POWER_THROTTLING_EXECUTION_SPEED;
+    power.StateMask   = THREAD_POWER_THROTTLING_EXECUTION_SPEED;
+
+    SetPriorityClass(GetCurrentProcess(), IDLE_PRIORITY_CLASS);
+    SetProcessInformation(GetCurrentProcess(), ProcessPowerThrottling, &power, sizeof(power));
+}
+
 void Main(void) {
     CURSORINFO cursorInfo;
     LASTINPUTINFO lastInput;
@@ -35,6 +46,9 @@ void Main(void) {
     if (!TestAPI(mouseAccArray, &lastInput, &cursorInfo)) {
         ExitProcess(1);
     }
+
+    EnableEfficiencyMode();
+    SetProcessWorkingSetSize(GetCurrentProcess(), -1, -1);
 
     const int mouseAccEnabledSetting[] = {6, 10, 1};
     const int mouseAccDisabledSetting[] = {0, 0, 0};
